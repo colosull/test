@@ -1,19 +1,19 @@
 pipeline {
-    agent any 
+    agent any
 
     tools {
-        maven 'Maven 3.5.2'
-        jdk 'Java 7'
+        maven 'Maven 3.3.9'
+        jdk 'Java 8'
     }
 
 //    environment {
-//	BITBUCKET_COMMON_CREDS = credentials('jenkins-bitbucket-common-creds')
+//      BITBUCKET_COMMON_CREDS = credentials('jenkins-bitbucket-common-creds')
 //    }
 
     parameters {
-        string(name: 'GIT_REPO', defaultValue: 'https://github.com/colosull/test.git', description: 'The Git repo to use')
+        string(name: 'GIT_REPO', defaultValue: 'github.com/colosull/test.git', description: 'The Git repo to use')
         string(name: 'BRANCH', defaultValue: 'test-2', description: 'The Git branch name to build')
-	string(name: 'EMAIL_TO', defaultValue: 'colosull@gmail.com', description: 'Build failures will be sent to this address')
+        string(name: 'EMAIL_TO', defaultValue: 'XXX@YYY.ZZZ', description: 'Build failures will be sent to this address')
     }
 
 
@@ -41,60 +41,69 @@ pipeline {
 
     stages {
 
-	stage('Git checkout') {
-	    steps {
-		echo 'Checkout from Git repo...'
-		git url: "${params.GIT_REPO}", branch: "${params.BRANCH}"
-	    }
-	}
-
-	stage('Merge') {
-	    steps {
-		echo 'Merging from master...'
-		sh 'git tag -a tagName -m "Jenkins build #${env.BUILD_ID}"'
-		sh 'git merge origin/master'
-		sh 'git commit -am "Merged master branch to ${params.BRANCH}"'
-		sh "git push"
-	    }
-	}
-
-	stage('Build') {
+        stage('Git checkout') {
             steps {
-		echo "Building ${env.BRANCH_NAME} ${env.CHANGE_ID}..."
-		sh 'mvn clean package'
-            }
-	}
-
-        stage('Test') { 
-            steps {
-		echo 'Testing...'
+                echo 'Checkout from Git repo...'
+                git url: "https://${params.GIT_REPO}", branch: "${params.BRANCH}", credentialsId: 'GIT_CREDS'
             }
         }
 
-        stage('Deploy') { 
-	    when {
+        stage('Merge') {
+            environment { 
+                GITUSER = credentials('git_credentials_id')
+            }
+            steps {
+                echo 'Merging from master...'
+                sh 'git merge origin/master'
+//                sh 'git tag -a tagName -m "Jenkins build"'
+                sh 'git commit -am "Merged master to branch" | true'
+                sh 'git config push.default simple'
+                //sh 'git tag -a some.tag -m "some message"'
+                sh 'git push https://${GITUSER_USR}:${GITUSER_PSW}@${GIT_REPO}'
+                //withCredentials([usernamePassword(credentialsId: 'GIT_CREDS', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    //sh "git push --repo=https://${GIT_ACCESS_KEY_USR}:${GIT_ACCESS_KEY_PSW}@${GIT_REPO} --set-upstream origin test-2"
+                //}
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building ${env.BRANCH_NAME} ${env.CHANGE_ID}..."
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing...'
+            }
+        }
+
+        stage('Deploy') {
+            when {
               expression {
-                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+                currentBuild.result == null || currentBuild.result == 'SUCCESS'
               }
             }
             steps {
-		echo 'Deploying...'
+                echo 'Deploying...'
             }
         }
 
-        stage('Report') { 
+        stage('Report') {
             steps {
-		echo "Finished build id ${env.BUILD_ID}"
-		echo "Build Name/Result ${currentBuild.displayName}/${currentBuild.result}" 
+                echo "Finished build id ${env.BUILD_ID}"
+                echo "Build Name/Result ${currentBuild.displayName}/${currentBuild.result}"
             }
         }
     }
     post {
         failure {
-	    mail to: "${params.EMAIL_TO}", bcc: '', cc: '', from: '', replyTo: '', 
-		subject: "Pipeline failed ${currentBuild.displayName}#${env.BUILD_ID}", 
-		body: "Pipeline failed: ${currentBuild.result}. ${currentBuild.displayName}#${env.BUILD_ID}"
-	    //slack notify???
+            mail to: "${params.EMAIL_TO}", bcc: '', cc: '', from: '', replyTo: '',
+                subject: "Pipeline failed ${currentBuild.displayName}#${env.BUILD_ID}",
+                body: "Pipeline failed: ${currentBuild.result}. ${currentBuild.displayName}#${env.BUILD_ID}"
+            //slack notify???
         }
     }
 }
+
