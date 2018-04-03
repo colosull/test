@@ -61,7 +61,7 @@ pipeline {
 	stage('Build') {
             steps {
 		echo "Building ${env.BRANCH_NAME} ${env.CHANGE_ID}..."
-		sh 'mvn clean install'
+		sh 'mvn clean package'
             }
 	}
 
