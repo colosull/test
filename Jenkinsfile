@@ -6,12 +6,12 @@ pipeline {
         jdk 'Java 8'
     }
 
-    triggers {
+//    triggers {
 
         //run every ten minutes, Monday to Friday
         //cron('*/10 * * * 1-5')
 
-    }
+//    }
 
 //    environment {
 //      BITBUCKET_COMMON_CREDS = credentials('jenkins-bitbucket-common-creds')
