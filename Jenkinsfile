@@ -6,6 +6,13 @@ pipeline {
         jdk 'Java 8'
     }
 
+    triggers {
+
+        //run every ten minutes, Monday to Friday
+        //cron('*/10 * * * 1-5')
+
+    }
+
 //    environment {
 //      BITBUCKET_COMMON_CREDS = credentials('jenkins-bitbucket-common-creds')
 //    }
@@ -73,6 +80,34 @@ pipeline {
             }
         }
 
+        stage('dependency-check') {
+
+            steps {
+
+    		echo 'Running OWASP Dependency-Check...'
+
+                dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false,
+ 
+                        includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '',
+ 
+                        scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
+
+                //dependencyCheckPublisher canComputeNew: false, canRunOnFailed: true, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
+
+		//Build will fail if there is more than 1 High Severity vuln is found
+		//Build is unstable if more than 5 Normal Severity vulns are found
+		//Build will fail if more than 10 Normal Severity vulns are found
+                dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', failedTotalHigh: '1', failedTotalNormal: '10',
+ 
+                        healthy: '0', pattern: '', unHealthy: '10', unstableTotalHigh: '1', unstableTotalNormal: '5'
+
+
+            }
+
+        }
+
+
+
         stage('Test') {
             steps {
                 echo 'Testing...'
@@ -99,9 +134,13 @@ pipeline {
     }
     post {
         failure {
+            echo "Job '${JOB_NAME}' (${BUILD_NUMBER}) is waiting for input"
+
+            echo "Please go to ${BUILD_URL} and verify the build"
+
             mail to: "${params.EMAIL_TO}", bcc: '', cc: '', from: '', replyTo: '',
                 subject: "Pipeline failed ${currentBuild.displayName}#${env.BUILD_ID}",
-                body: "Pipeline failed: ${currentBuild.result}. ${currentBuild.displayName}#${env.BUILD_ID}"
+                body: "Pipeline failed: ${currentBuild.result}. ${currentBuild.displayName}#${env.BUILD_ID}.\nPlease go to ${BUILD_URL} and verify the build"
             //slack notify???
         }
     }
