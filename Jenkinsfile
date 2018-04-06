@@ -63,12 +63,12 @@ pipeline {
             }
             steps {
                 echo 'Merging from master...'
-                sh 'git merge origin/master'
+                bat 'git merge origin/master'
 //                sh 'git tag -a tagName -m "Jenkins build"'
-                sh 'git commit -am "Merged master to branch" | true'
-                sh 'git config push.default simple'
+                bat 'git commit -am "Merged master to branch" | true'
+                bat 'git config push.default simple'
                 //sh 'git tag -a some.tag -m "some message"'
-                sh 'git push https://${GITUSER_USR}:${GITUSER_PSW}@${GIT_REPO}'
+                bat 'git push https://${GITUSER_USR}:${GITUSER_PSW}@${GIT_REPO}'
                 //withCredentials([usernamePassword(credentialsId: 'GIT_CREDS', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     //sh "git push --repo=https://${GIT_ACCESS_KEY_USR}:${GIT_ACCESS_KEY_PSW}@${GIT_REPO} --set-upstream origin test-2"
                 //}
@@ -78,7 +78,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Building ${env.BRANCH_NAME} ${env.CHANGE_ID}..."
-                sh 'mvn clean package'
+                bat 'mvn clean package'
             }
         }
 
@@ -140,9 +140,9 @@ pipeline {
 
             echo "Please go to ${BUILD_URL} and verify the build"
 
-            mail to: "${params.EMAIL_TO}", bcc: '', cc: '', from: '', replyTo: '',
-                subject: "Pipeline failed ${currentBuild.displayName}#${env.BUILD_ID}",
-                body: "Pipeline failed: ${currentBuild.result}. ${currentBuild.displayName}#${env.BUILD_ID}.\nPlease go to ${BUILD_URL} and verify the build"
+            //mail to: "${params.EMAIL_TO}", bcc: '', cc: '', from: '', replyTo: '',
+            //    subject: "Pipeline failed ${currentBuild.displayName}#${env.BUILD_ID}",
+            //    body: "Pipeline failed: ${currentBuild.result}. ${currentBuild.displayName}#${env.BUILD_ID}.\nPlease go to ${BUILD_URL} and verify the build"
             //slack notify???
         }
     }
