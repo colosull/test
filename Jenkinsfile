@@ -48,12 +48,12 @@ pipeline {
 
     stages {
 
-        stage('Git checkout') {
-            steps {
-                echo 'Checkout from Git repo...'
-                git url: "https://${params.GIT_REPO}", branch: "${params.BRANCH}", credentialsId: 'GIT_CREDS'
-            }
-        }
+//        stage('Git checkout') {
+//            steps {
+//                echo 'Checkout from Git repo...'
+//                git url: "https://${params.GIT_REPO}", branch: "${params.BRANCH}", credentialsId: 'GIT_CREDS'
+//            }
+//        }
 
         stage('Merge') {
             environment { 
