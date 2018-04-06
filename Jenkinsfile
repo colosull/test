@@ -63,12 +63,12 @@ pipeline {
             }
             steps {
                 echo 'Merging from master...'
-                bat 'git merge origin/master'
+                bat '%GIT_HOME%\bin\git merge origin/master'
 //                sh 'git tag -a tagName -m "Jenkins build"'
-                bat 'git commit -am "Merged master to branch" | true'
-                bat 'git config push.default simple'
+                bat '%GIT_HOME%\bin\git commit -am "Merged master to branch" | true'
+                bat '%GIT_HOME%\bin\git config push.default simple'
                 //sh 'git tag -a some.tag -m "some message"'
-                bat 'git push https://${GITUSER_USR}:${GITUSER_PSW}@${GIT_REPO}'
+                bat '%GIT_HOME%\bin\git push https://${GITUSER_USR}:${GITUSER_PSW}@${GIT_REPO}'
                 //withCredentials([usernamePassword(credentialsId: 'GIT_CREDS', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     //sh "git push --repo=https://${GIT_ACCESS_KEY_USR}:${GIT_ACCESS_KEY_PSW}@${GIT_REPO} --set-upstream origin test-2"
                 //}
@@ -78,7 +78,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Building ${env.BRANCH_NAME} ${env.CHANGE_ID}..."
-                bat 'mvn clean package'
+                bat '%M2_HOME%\bin\mvn clean package'
             }
         }
 
